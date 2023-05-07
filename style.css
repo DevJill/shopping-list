@@ -123,6 +123,20 @@ header h1 {
   font-weight: 700;
 }
 
+.edit-mode-items {
+  color : #ccc;
+}
+
+.edit-mode-btn{
+  background-color: #2dc653;
+  color: #f5f5f5;
+}
+
+.edit-mode-btn:hover{
+  background-color: #4ad66d;
+  color:  #f5f5f5;
+}
+
 @media (max-width: 500px) {
   .items li {
     width: 100%;

@@ -3,20 +3,25 @@ const itemInput = document.getElementById('item-input');
 const itemList = document.getElementById('item-list');
 const clearBtn = document.getElementById('clear');
 const itemFilter = document.getElementById('filter');
+const formBtn = itemForm.querySelector('button');
+let isEditMode = false;
 
 
 // display items on load
 
 function displayItems(){
+
   const itemsFromStorage = getItemsFromStorage();
   itemsFromStorage.forEach((item) => addItemToDOM(item));
 
   checkUI();
+
 }
 
 //adding item
 
 function onAddItemSubmit(e) {
+
   e.preventDefault();
 
   const newItem = itemInput.value;
@@ -24,6 +29,17 @@ function onAddItemSubmit(e) {
   if (newItem === '') {
     alert('Please add an item');
     return;
+  }
+
+  if (isEditMode) {
+    const itemToEdit = itemList.querySelector('.edit-mode-items');
+
+    removeItemFromStorage(itemToEdit.textContent);
+    itemToEdit.classList.remove('edit-mode');
+    itemToEdit.remove();
+    
+    removeUpdateEdit();
+
   }
 
   addItemToDOM(newItem);
@@ -39,6 +55,7 @@ function onAddItemSubmit(e) {
 //adding item to DOM
 
 function addItemToDOM(item){
+
   const li = document.createElement('li');
   li.appendChild(document.createTextNode(item));
 
@@ -46,34 +63,41 @@ function addItemToDOM(item){
    li.appendChild(button);
 
    itemList.appendChild(li);
+
 }
 
 //li button creation
 
 function createButton(classes) {
+
   const button = document.createElement('button');
   button.className = classes;
   const icon = createIcon('fa-solid fa-xmark');
   button.appendChild(icon);
   return button;
+
 }
 
 //li icon creation
 
 function createIcon(classes) {
+
   const icon = document.createElement('i');
   icon.className = classes;
   return icon;
+
 }
 
 //adding item to localStorage
 
 function addItemToStorage(item){
+
   const itemsFromStorage = getItemsFromStorage();
 
   itemsFromStorage.push(item);
 
   localStorage.setItem('items', JSON.stringify(itemsFromStorage));
+
 }
 
 //getting items from localStorage
@@ -89,14 +113,47 @@ function getItemsFromStorage(){
   }
   
   return itemsFromStorage;
+
 }
 
 //selecting clicked item
 
 function onClickItem(e){
-  if (e.target.parentElement.classList.contains('remove-item')){
+
+  const targetClassList = e.target.parentElement.classList;
+
+  if (targetClassList.contains('remove-item')){
     removeItem(e.target.parentElement.parentElement);
-  }
+  } else if (targetClassList.contains('items')){
+    setItemToEdit(e.target)
+
+}};
+
+//setting item to edit mode
+
+function setItemToEdit(item){
+
+  isEditMode = true;
+  const items = itemList.querySelectorAll('li');
+  items.forEach((i) => i.classList.remove('edit-mode-items'));
+  formBtn.classList.remove('edit-mode-btn');
+
+  formBtn.classList.add('edit-mode-btn');
+  formBtn.innerHTML = '<i class="fa-solid fa-pen"></i> Update item';
+  
+  item.classList.add('edit-mode-items');
+  itemInput.value = item.textContent;
+
+}
+
+//removing update item input, and button class
+
+function removeUpdateEdit(){
+
+  isEditMode = false;
+  formBtn.classList.remove('edit-mode-btn');
+  formBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Item';
+
 }
 
 //removing item
@@ -110,6 +167,8 @@ function removeItem(item) {
      checkUI();
     }
 
+    removeUpdateInput();
+
 }
 
 //removing item from localStorage
@@ -118,13 +177,8 @@ function removeItemFromStorage(item) {
 
   let itemsFromStorage = getItemsFromStorage();
 
-  //filtering out item to be removed
   itemsFromStorage = itemsFromStorage.filter((i) => i !== item);
 
-  // console.log(itemsFromStorage);
-
-
-  //re-setting the localStorage to new array
   localStorage.setItem('items', JSON.stringify(itemsFromStorage));
 
 }
@@ -132,18 +186,22 @@ function removeItemFromStorage(item) {
 //clearing items
 
 function clearItems() {
+
   while(itemList.firstChild) {
     itemList.removeChild(itemList.firstChild);
   }
 
   localStorage.removeItem('items');
 
+  removeUpdateEdit();
   checkUI();
+
 }
 
 //filter items
 
 function filterItems(e) {
+
   const items = itemList.querySelectorAll('li');
   const text = e.target.value.toLowerCase();
 
@@ -163,20 +221,24 @@ function filterItems(e) {
 //checking UI
 
 function checkUI() {
+
   const items = itemList.querySelectorAll('li');
 
   if (items.length === 0) {
     clearBtn.style.display = 'none';
     itemFilter.style.display = 'none';
-    // clearBtn.remove();
-    // itemFilter.remove();
   } else {
     clearBtn.style.display = 'block';
-    itemFilter.style.display = 'block';    
-}}
+    itemFilter.style.display = 'block';  };
+
+   removeUpdateEdit();
+ 
+  }
   
+//initialization eventListeners
 
 function init(){
+
   itemForm.addEventListener('submit', onAddItemSubmit);
   itemList.addEventListener('click', onClickItem);
   clearBtn.addEventListener('click', clearItems);
@@ -185,6 +247,7 @@ function init(){
 
   
  checkUI();
+
 }
 
 
