@@ -5,23 +5,21 @@ const clearBtn = document.getElementById('clear');
 const itemFilter = document.getElementById('filter');
 const formBtn = itemForm.querySelector('button');
 let isEditMode = false;
+let isItemDuplicate = false;
 
 
 // display items on load
 
 function displayItems(){
-
   const itemsFromStorage = getItemsFromStorage();
   itemsFromStorage.forEach((item) => addItemToDOM(item));
 
   checkUI();
-
 }
 
 //adding item
 
 function onAddItemSubmit(e) {
-
   e.preventDefault();
 
   const newItem = itemInput.value;
@@ -39,23 +37,40 @@ function onAddItemSubmit(e) {
     itemToEdit.remove();
     
     removeUpdateEdit();
-
   }
 
-  addItemToDOM(newItem);
+  itemDuplicateCheck(newItem);
 
-  addItemToStorage(newItem);
-  
+  if(isItemDuplicate){
+    isItemDuplicate = false;
+    return;
+  }
+
+  itemInput.classList.remove('form-input-error');
+
+  addItemToDOM(newItem);
+  addItemToStorage(newItem);  
   checkUI();
 
   itemInput.value = '';
-
 }
+
+
+function itemDuplicateCheck(item){
+  const itemsFromStorage = getItemsFromStorage();
+
+  if(itemsFromStorage.includes(item)){
+    itemInput.classList.add('form-input-error');
+    isItemDuplicate = true;
+    alert('This item already exists!');
+  }
+};
+
 
 //adding item to DOM
 
 function addItemToDOM(item){
-
+  
   const li = document.createElement('li');
   li.appendChild(document.createTextNode(item));
 
@@ -63,47 +78,40 @@ function addItemToDOM(item){
    li.appendChild(button);
 
    itemList.appendChild(li);
-
 }
 
 //li button creation
 
 function createButton(classes) {
-
   const button = document.createElement('button');
   button.className = classes;
   const icon = createIcon('fa-solid fa-xmark');
   button.appendChild(icon);
   return button;
-
 }
 
 //li icon creation
 
 function createIcon(classes) {
-
   const icon = document.createElement('i');
   icon.className = classes;
   return icon;
-
 }
 
 //adding item to localStorage
 
 function addItemToStorage(item){
-
   const itemsFromStorage = getItemsFromStorage();
+  
 
   itemsFromStorage.push(item);
 
   localStorage.setItem('items', JSON.stringify(itemsFromStorage));
-
 }
 
 //getting items from localStorage
 
 function getItemsFromStorage(){
-
   let itemsFromStorage;
 
   if (localStorage.getItem('items') === null) {
@@ -113,26 +121,22 @@ function getItemsFromStorage(){
   }
   
   return itemsFromStorage;
-
 }
 
 //selecting clicked item
 
 function onClickItem(e){
-
   const targetClassList = e.target.parentElement.classList;
 
   if (targetClassList.contains('remove-item')){
     removeItem(e.target.parentElement.parentElement);
   } else if (targetClassList.contains('items')){
     setItemToEdit(e.target)
-
 }};
 
 //setting item to edit mode
 
 function setItemToEdit(item){
-
   isEditMode = true;
   const items = itemList.querySelectorAll('li');
   items.forEach((i) => i.classList.remove('edit-mode-items'));
@@ -143,23 +147,11 @@ function setItemToEdit(item){
   
   item.classList.add('edit-mode-items');
   itemInput.value = item.textContent;
-
-}
-
-//removing update item input, and button class
-
-function removeUpdateEdit(){
-
-  isEditMode = false;
-  formBtn.classList.remove('edit-mode-btn');
-  formBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Item';
-
 }
 
 //removing item
 
 function removeItem(item) {
-
     if (confirm('Are you sure?')) {
      item.remove();
 
@@ -167,41 +159,33 @@ function removeItem(item) {
      checkUI();
     }
 
-    removeUpdateInput();
-
 }
 
 //removing item from localStorage
 
 function removeItemFromStorage(item) {
-
   let itemsFromStorage = getItemsFromStorage();
 
   itemsFromStorage = itemsFromStorage.filter((i) => i !== item);
 
   localStorage.setItem('items', JSON.stringify(itemsFromStorage));
-
 }
 
 //clearing items
 
 function clearItems() {
-
   while(itemList.firstChild) {
     itemList.removeChild(itemList.firstChild);
   }
 
   localStorage.removeItem('items');
 
-  removeUpdateEdit();
   checkUI();
-
 }
 
 //filter items
 
 function filterItems(e) {
-
   const items = itemList.querySelectorAll('li');
   const text = e.target.value.toLowerCase();
 
@@ -213,15 +197,21 @@ function filterItems(e) {
     } else {
       item.style.display = 'none';
     }
-  });
-
+  })
 }
-  
+
+//removing update item input, and button class
+
+function removeUpdateEdit(){
+  isEditMode = false;
+  itemInput.value = '';
+  formBtn.classList.remove('edit-mode-btn');
+  formBtn.innerHTML = '<i class="fa-solid fa-plus"></i> Add Item';
+}
 
 //checking UI
 
 function checkUI() {
-
   const items = itemList.querySelectorAll('li');
 
   if (items.length === 0) {
@@ -231,23 +221,19 @@ function checkUI() {
     clearBtn.style.display = 'block';
     itemFilter.style.display = 'block';  };
 
-   removeUpdateEdit();
- 
+   removeUpdateEdit(); 
   }
   
 //initialization eventListeners
 
 function init(){
-
   itemForm.addEventListener('submit', onAddItemSubmit);
   itemList.addEventListener('click', onClickItem);
   clearBtn.addEventListener('click', clearItems);
   itemFilter.addEventListener('input', filterItems);
   document.addEventListener('DOMContentLoaded', displayItems);
-
-  
+ 
  checkUI();
-
 }
 
 

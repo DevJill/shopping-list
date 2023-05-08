@@ -137,6 +137,10 @@ header h1 {
   color:  #f5f5f5;
 }
 
+.form-input-error {
+  border: 1px solid #ff0000;
+}
+
 @media (max-width: 500px) {
   .items li {
     width: 100%;
